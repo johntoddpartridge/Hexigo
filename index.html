@@ -5,6 +5,51 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>Hexigo</title>
 <style>*{margin:0;padding:0;box-sizing:border-box}html,body{height:100%;min-height:100vh;margin:0}body{background:#23272e;overflow-x:hidden;-webkit-text-size-adjust:100%}#root{min-height:100vh;display:flex;flex-direction:column}#loading{display:flex;align-items:center;justify-content:center;height:100vh;color:#999;font-family:sans-serif;font-size:18px}</style>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script>
+firebase.initializeApp({
+  apiKey: "AIzaSyCtW8DOpE2YLG8JlwJ2tfER-cge6w8nhkk",
+  authDomain: "hexigo-9aa6b.firebaseapp.com",
+  databaseURL: "https://hexigo-9aa6b-default-rtdb.firebaseio.com",
+  projectId: "hexigo-9aa6b",
+  storageBucket: "hexigo-9aa6b.firebasestorage.app",
+  messagingSenderId: "823626969590",
+  appId: "1:823626969590:web:283c53411be96573f217d7"
+});
+var _fbDb = firebase.database();
+window.storage = {
+  set: async function(key, value, shared) {
+    try {
+      await _fbDb.ref('games/' + key).set(value);
+      return { key: key, value: value, shared: !!shared };
+    } catch(e) { console.error('FB set error:', e); return null; }
+  },
+  get: async function(key, shared) {
+    try {
+      var snap = await _fbDb.ref('games/' + key).once('value');
+      var val = snap.val();
+      if (val === null) return null;
+      return { key: key, value: val, shared: !!shared };
+    } catch(e) { console.error('FB get error:', e); return null; }
+  },
+  delete: async function(key, shared) {
+    try {
+      await _fbDb.ref('games/' + key).remove();
+      return { key: key, deleted: true, shared: !!shared };
+    } catch(e) { return null; }
+  },
+  list: async function(prefix, shared) {
+    try {
+      var snap = await _fbDb.ref('games').once('value');
+      var data = snap.val() || {};
+      var keys = Object.keys(data);
+      if (prefix) keys = keys.filter(function(k) { return k.indexOf(prefix) === 0; });
+      return { keys: keys, prefix: prefix, shared: !!shared };
+    } catch(e) { return null; }
+  }
+};
+</script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.production.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.production.min.js"></script>
 </head>
